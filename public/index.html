@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HouseHoldHero AI</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #0A1017;
+      color: white;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .content {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .left-content {
+      flex: 1;
+      min-width: 300px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .right-content {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .logo-container {
+      margin-bottom: 30px;
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+    .logo {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      animation: pulse 2s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.05); }
+    }
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .logo-element {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .logo-circle {
+      border: 2px solid #0EA5E9;
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+    .logo-lightning {
+      position: absolute;
+      top: 20px;
+      left: 45px;
+      width: 30px;
+      height: 80px;
+      background-color: #0EA5E9;
+      clip-path: polygon(50% 0%, 0% 50%, 50% 50%, 0% 100%, 100% 50%, 50% 50%);
+      animation: rotate 8s linear infinite;
+      transform-origin: center;
+    }
+    .logo-house {
+      position: absolute;
+      top: 40px;
+      left: 35px;
+      width: 50px;
+      height: 40px;
+      border: 2px solid white;
+      border-top: none;
+      position: relative;
+    }
+    .logo-house:before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: -2px;
+      width: 0;
+      height: 0;
+      border-left: 27px solid transparent;
+      border-right: 27px solid transparent;
+      border-bottom: 20px solid white;
+    }
+    .logo-text {
+      text-align: center;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .app-name {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .tagline {
+      font-size: 14px;
+      color: #0EA5E9;
+      font-style: italic;
+      margin-bottom: 30px;
+    }
+    .title {
+      font-size: 48px;
+      font-weight: bold;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: #AAAAAA;
+      margin-bottom: 30px;
+      line-height: 1.5;
+      max-width: 400px;
+    }
+    .button {
+      background-color: transparent;
+      border: 1px solid #0EA5E9;
+      color: white;
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+    .button:hover {
+      background-color: rgba(14, 165, 233, 0.2);
+      transform: translateY(-2px);
+    }
+    .phone-container {
+      width: 280px;
+      height: 560px;
+      perspective: 1000px;
+      transform-style: preserve-3d;
+      transform: rotateY(-10deg) rotateX(5deg);
+      transition: transform 0.5s ease;
+    }
+    .phone-container:hover {
+      transform: rotateY(-5deg) rotateX(2deg);
+    }
+    .phone {
+      width: 100%;
+      height: 100%;
+      background-color: #0F1824;
+      border-radius: 40px;
+      padding: 20px;
+      overflow: hidden;
+      border: 10px solid #1A2634;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    }
+    .phone-header {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .dashboard-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .card {
+      background-color: #1A2634;
+      border-radius: 20px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card-title {
+      font-size: 16px;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+    .graph-container {
+      height: 40px;
+      position: relative;
+    }
+    .graph {
+      height: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    .graph:after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #0EA5E9, #4F46E5);
+      animation: graphWave 3s ease-in-out infinite;
+    }
+    @keyframes graphWave {
+      0% { clip-path: polygon(0% 0%, 20% 50%, 40% 0%, 60% 100%, 80% 50%, 100% 100%, 100% 100%, 0% 100%); }
+      50% { clip-path: polygon(0% 100%, 20% 0%, 40% 100%, 60% 0%, 80% 100%, 100% 0%, 100% 100%, 0% 100%); }
+      100% { clip-path: polygon(0% 0%, 20% 50%, 40% 0%, 60% 100%, 80% 50%, 100% 100%, 100% 100%, 0% 100%); }
+    }
+    .amount {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: right;
+    }
+    .circle-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 80px;
+    }
+    .circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 4px solid transparent;
+      border-top: 4px solid #0EA5E9;
+      border-right: 4px solid #0EA5E9;
+      position: relative;
+      animation: rotate 3s linear infinite;
+    }
+    .circle:before {
+      content: '52%';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .budget-amount {
+      font-size: 32px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .date {
+      font-size: 14px;
+      color: #9CA3AF;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #E5E7EB;
+      margin-top: 20px;
+    }
+    .tab {
+      padding: 15px;
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
+    }
+    .tab.active {
+      border-bottom: 2px solid #4F46E5;
+      color: #4F46E5;
+      font-weight: 600;
+    }
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1F2937;
+    }
+    .card-action {
+      font-size: 14px;
+      color: #4F46E5;
+      font-weight: 500;
+    }
+    .budget-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .budget-label {
+      font-size: 14px;
+      color: #6B7280;
+    }
+    .budget-amount {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+    }
+    .progress-bar {
+      height: 8px;
+      background-color: #E5E7EB;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background-color: #10B981;
+      width: 65%;
+    }
+    .footer {
+      padding: 15px;
+      text-align: center;
+      border-top: 1px solid #E5E7EB;
+      background-color: white;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .footer-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: #6B7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <div class="left-content">
+        <!-- Animated Logo -->
+        <div class="logo-container">
+          <div class="logo">
+            <div class="logo-circle"></div>
+            <div class="logo-lightning"></div>
+            <div class="logo-house"></div>
+          </div>
+        </div>
+        
+        <div class="logo-text">
+          <div class="app-name">HouseHoldHero</div>
+          <div class="tagline">Smart Energy for South Africa</div>
+        </div>
+        
+        <h1 class="title">Your Home's<br>AI-Powered<br>Command<br>Center</h1>
+        <p class="subtitle">
+          Manage finances, energy, inventory, and wellness in one intelligent dashboard
+        </p>
+        <a href="http://localhost:19006" class="button">Get Started</a>
+      </div>
+      
+      <div class="right-content">
+        <div class="phone-container">
+          <div class="phone">
+            <div class="phone-header">
+              <div class="dashboard-title">Dashboard</div>
+            </div>
+            
+            <div class="card">
+              <div class="card-title">Smart Savings</div>
+              <div class="graph-container">
+                <div class="graph"></div>
+              </div>
+              <div class="amount">R7,820</div>
+            </div>
+            
+            <div class="card">
+              <div class="card-title">Energy Usage</div>
+              <div class="circle-container">
+                <div class="circle"></div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-title">Budget Overview</div>
+              <div class="budget-amount">R13,500</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
