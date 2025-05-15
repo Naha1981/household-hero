@@ -2,13 +2,17 @@
   "name": "householdhero",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://naha1981.github.io/household-hero/",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "web-only": "expo start --web-only",
-    "eject": "expo eject"
+    "eject": "expo eject",
+    "build-web": "expo export:web",
+    "predeploy": "npm run build-web",
+    "deploy": "gh-pages -d web-build"
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
@@ -42,6 +46,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "~18.2.14",
+    "gh-pages": "^6.3.0",
     "typescript": "^5.1.3"
   }
 }
