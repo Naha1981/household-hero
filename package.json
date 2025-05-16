@@ -12,7 +12,9 @@
     "eject": "expo eject",
     "build-web": "expo export:web",
     "predeploy": "npm run build-web",
-    "deploy": "gh-pages -d web-build"
+    "deploy": "gh-pages -d web-build",
+    "build": "expo export:web",
+    "vercel-build": "expo export:web"
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
