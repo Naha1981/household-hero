@@ -6,12 +6,11 @@
     <title>HouseHoldHero AI</title>
     <script>
       // Initialize process.env if it doesn't exist (for browser environments without build tools)
+      // This is a general setup for process.env, API_KEY itself should come from the environment.
       if (typeof window.process === 'undefined') {
         window.process = { env: {} };
       }
-      // Placeholder for API keys - In a real production app, manage these securely
-      // For development, you can set them here or through a .env file if your setup supports it.
-      window.process.env.API_KEY = window.process.env.API_KEY || "YOUR_GEMINI_API_KEY_HERE"; // Existing placeholder
+      // DO NOT set API_KEY here. It must be provided by the environment.
 
       tailwind.config = {
         theme: {

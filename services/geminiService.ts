@@ -1,14 +1,15 @@
 
+
 import { GoogleGenAI, GenerateContentResponse, Part, GroundingChunk } from "@google/genai";
 import { GEMINI_TEXT_MODEL } from '../constants';
 import { Transaction, GroundingSource, PriceComparisonResult, BudgetItem, UserProfile, TransactionType } from "../types";
 
-// Ensure API_KEY is accessed via process.env
-const apiKey = process.env.API_KEY;
-if (!apiKey) {
-  console.error("Gemini API key is missing. Please set the API_KEY environment variable.");
-}
-const ai = new GoogleGenAI({ apiKey: apiKey || "MISSING_API_KEY" }); 
+// Initialize directly using process.env.API_KEY as per guidelines.
+// The SDK will handle issues if the key is missing/invalid.
+// Assume process.env.API_KEY is pre-configured and valid.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY }); 
+
+const formattingInstructions = `Please provide a response that is clean and well-formatted. Use clear headings with bold font. Employ bullet points only when necessary for lists. Avoid the use of asterisks (*) or double asterisks (**) for emphasis within paragraphs, except for bolding headings. Do not include introductory phrases like 'Here is...' or similar.`;
 
 const parseJsonFromGeminiResponse = <T,>(textResponse: string): T | null => {
   let jsonStr = textResponse.trim();
@@ -26,9 +27,9 @@ const parseJsonFromGeminiResponse = <T,>(textResponse: string): T | null => {
 };
 
 export const getCategorySuggestion = async (description: string, existingCategories: string[]): Promise<string> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return "Other (API Key Missing)";
+  // Removed API key check here; assuming key is valid and proceeding with API call.
   try {
-    const prompt = `Given the transaction description "${description}" and the existing categories [${existingCategories.join(", ")}], suggest the most appropriate single category. If unsure, suggest "Other". Respond with only the category name.`;
+    const prompt = `Given the transaction description "${description}" and the existing categories [${existingCategories.join(", ")}], suggest the most appropriate single category. If unsure, suggest "Other". Respond with only the category name. Do not use introductory phrases.`;
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
       contents: prompt,
@@ -41,9 +42,10 @@ export const getCategorySuggestion = async (description: string, existingCategor
 };
 
 export const getFinancialLiteracyTip = async (): Promise<{ tip: string, sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { tip: "Enable API Key to get tips." };
+  // Removed API key check here
   try {
-    const prompt = "Provide a concise financial literacy tip relevant for South African households. Focus on practical advice for budgeting, saving, or managing debt. Make the tip easy to understand and actionable. If possible, use Google Search to find relevant, up-to-date information or context if the tip relates to current economic conditions or specific SA financial products. Format the main tip clearly, perhaps as a short paragraph or a few bullet points if that makes it clearer.";
+    const prompt = `Provide a concise financial literacy tip relevant for South African households. Focus on practical advice for budgeting, saving, or managing debt. Make the tip easy to understand and actionable. If possible, use Google Search to find relevant, up-to-date information or context if the tip relates to current economic conditions or specific SA financial products.
+${formattingInstructions}`;
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
       contents: prompt,
@@ -65,18 +67,23 @@ export const getFinancialLiteracyTip = async (): Promise<{ tip: string, sources?
 };
 
 export const getRecipeFromIngredients = async (ingredients: string[], mealType?: string, dietaryRestrictions?: string[]): Promise<{ name: string, instructions: string, sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { name: "Recipe Feature Disabled", instructions: "API Key missing." };
+  // Removed API key check here
   try {
     let prompt = `Generate a simple recipe using these ingredients: ${ingredients.join(", ")}.`;
     if (mealType) prompt += ` Suitable for ${mealType}.`;
     if (dietaryRestrictions && dietaryRestrictions.length > 0) prompt += ` Keep in mind these dietary restrictions: ${dietaryRestrictions.join(", ")}.`;
-    prompt += ` The recipe should be easy to follow for a home cook. Provide a recipe name and step-by-step instructions. Format the response as JSON with "name" and "instructions" keys. Use Google Search to find a suitable, publicly available recipe if possible.`;
+    prompt += ` The recipe should be easy to follow for a home cook. Provide a recipe name and step-by-step instructions.
+Format the response as JSON with "name" and "instructions" keys.
+For the text in the "instructions" field: Use clear, numbered steps. Use **bold headings** for any sub-sections if appropriate. Avoid asterisks for emphasis. Employ bullet points only if necessary for lists (numbered steps are preferred for instructions).
+Ensure the overall output is ONLY the JSON object. Do not use introductory phrases like 'Here is...' or similar.
+Use Google Search to find a suitable, publicly available recipe if possible.`;
     
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
       contents: prompt,
       config: {
         tools: [{googleSearch: {}}],
+        // responseMimeType: "application/json", // Keep this if G specifies, but the prompt is strong for JSON only.
       }
     });
 
@@ -99,9 +106,10 @@ export const getRecipeFromIngredients = async (ingredients: string[], mealType?:
 };
 
 export const getEnergyTipsSA = async (): Promise<{ tips: string[], sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { tips: ["Enable API Key for energy tips."] };
+  // Removed API key check here
   try {
-    const prompt = "Provide 3-5 practical and concise energy-saving tips for South African households. Consider common appliances and typical energy usage patterns in SA. Format the tips as a bulleted list (e.g., using '-' or '*'). Use Google Search to ensure tips are relevant and potentially reference local conditions or common appliance types.";
+    const prompt = `Provide 3-5 practical and concise energy-saving tips for South African households. Consider common appliances and typical energy usage patterns in SA. Format the tips as a list. Use Google Search to ensure tips are relevant and potentially reference local conditions or common appliance types.
+${formattingInstructions}`;
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
       contents: prompt,
@@ -110,10 +118,18 @@ export const getEnergyTipsSA = async (): Promise<{ tips: string[], sources?: Gro
       }
     });
     const rawText = response.text.trim();
-    const tips = rawText.split('\n')
+    // Improved parsing for bullet points, numbered lists, or simple lines if no clear list format detected
+    let tips = rawText.split('\n')
       .map(tip => tip.trim())
-      .filter(tip => tip.length > 0 && /^(\*|-|\d+\.|[a-zA-Z]\.)\s/.test(tip)) 
-      .map(tip => tip.replace(/^(\*|-|\d+\.|[a-zA-Z]\.)\s*/, '')); 
+      .filter(tip => tip.length > 0);
+
+    // If it looks like a list (starts with bullet/number), clean it up
+    if (tips.length > 1 && tips.every(tip => /^(\*|-|\d+\.|[a-zA-Z]\.)\s/.test(tip))) {
+        tips = tips.map(tip => tip.replace(/^(\*|-|\d+\.|[a-zA-Z]\.)\s*/, ''));
+    } else if (tips.length === 1 && rawText.includes('\n')) { // Single block with newlines, treat as separate if user expects list
+        tips = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
+    }
+
 
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
     const sources = groundingMetadata?.groundingChunks?.map((chunk: GroundingChunk) => chunk.web)
@@ -128,7 +144,7 @@ export const getEnergyTipsSA = async (): Promise<{ tips: string[], sources?: Gro
 };
 
 export const analyzeSpendingForSavings = async (transactions: Transaction[], budgetItems: BudgetItem[]): Promise<{ analysis: string, sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { analysis: "Spending analysis disabled. API Key missing." };
+  // Removed API key check here
   if (transactions.length === 0) return { analysis: "No transactions to analyze. Log some expenses first!" };
 
   try {
@@ -145,13 +161,14 @@ export const analyzeSpendingForSavings = async (transactions: Transaction[], bud
     }, {} as Record<string, number>);
 
     const prompt = `
-      Analyze the following spending data for a South African household and provide actionable savings tips.
-      Focus on categories where spending is high or exceeds budget.
-      Be practical and context-aware for South Africa.
-      Spending: ${JSON.stringify(expenseSummary)}
-      Budget: ${JSON.stringify(budgetSummary)}
-      Provide insights and 2-3 specific, actionable savings suggestions. Format suggestions clearly, perhaps as a short paragraph or bullet points. Use Google Search for context if needed (e.g., tips for saving on groceries in SA).
-    `;
+Analyze the following spending data for a South African household and provide actionable savings tips.
+Focus on categories where spending is high or exceeds budget.
+Be practical and context-aware for South Africa.
+Spending: ${JSON.stringify(expenseSummary)}
+Budget: ${JSON.stringify(budgetSummary)}
+Provide insights and 2-3 specific, actionable savings suggestions.
+Use Google Search for context if needed (e.g., tips for saving on groceries in SA).
+${formattingInstructions}`;
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
       contents: prompt,
@@ -176,13 +193,14 @@ export const analyzeSpendingForSavings = async (transactions: Transaction[], bud
 
 
 export const getGeneralTip = async (topic: string, context?: string): Promise<{ tip: string, sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { tip: `Enable API Key to get tips on ${topic}.` };
+  // Removed API key check here
   try {
     let prompt = `Provide a concise and practical tip on "${topic}" for a South African household.`;
     if (context) {
       prompt += ` Context: ${context}.`;
     }
-    prompt += ` Format the tip clearly. If multiple points are relevant, use a short bulleted list (e.g. using '-' or '*'). Make it easy to read and actionable. Use Google Search for relevant, up-to-date information or local context.`;
+    prompt += ` Make it easy to read and actionable. Use Google Search for relevant, up-to-date information or local context.
+${formattingInstructions}`;
     
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
@@ -205,20 +223,21 @@ export const getGeneralTip = async (topic: string, context?: string): Promise<{ 
 };
 
 export const compareGroceryPricesSA = async (itemName: string): Promise<{ results: PriceComparisonResult[], sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { results: [{ item: itemName, store: "N/A", price: "API Key Missing", lastChecked: new Date().toISOString() }] };
+  // Removed API key check here
   try {
     const prompt = `Compare current prices for "${itemName}" across major South African grocery chains like Checkers, Pick n Pay, Woolworths, Spar, Shoprite.
-    Provide the results as a JSON array, where each object has "item", "store", "price", and "lastChecked" (use today's date in ISO format).
-    Example: [{"item": "Milk 1L", "store": "Checkers", "price": "R20.99", "lastChecked": "YYYY-MM-DDTHH:mm:ss.sssZ"}]
-    Use Google Search to find this information. If a price isn't found for a specific store, omit it or state "N/A".
-    If you find multiple prices for the same item at the same store (e.g. online vs in-store, different pack sizes that are still the core item), list the most common or standard one.
-    Return ONLY the JSON array as your response, nothing else.`;
+Provide the results as a JSON array, where each object has "item", "store", "price", and "lastChecked" (use today's date in ISO format).
+Example: [{"item": "Milk 1L", "store": "Checkers", "price": "R20.99", "lastChecked": "YYYY-MM-DDTHH:mm:ss.sssZ"}]
+Use Google Search to find this information. If a price isn't found for a specific store, omit it or state "N/A".
+If you find multiple prices for the same item at the same store (e.g. online vs in-store, different pack sizes that are still the core item), list the most common or standard one.
+Return ONLY the JSON array as your response. Do not use introductory phrases like 'Here is...' or any other text outside the JSON array.`;
 
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
+        // responseMimeType: "application/json", // Model should infer from "Return ONLY JSON"
       },
     });
     
@@ -258,7 +277,7 @@ export const estimateApplianceConsumption = async (
   period: string, 
   applianceNames: string[]
 ): Promise<{ estimates: Record<string, string>, sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { estimates: { error: "API Key Missing" } };
+  // Removed API key check here
   if (applianceNames.length === 0) return { estimates: { info: "No appliances listed to estimate for." } };
 
   try {
@@ -268,7 +287,8 @@ Please provide an estimated breakdown of kWh consumption for each of these liste
 The sum of individual estimates should closely match the total ${totalKWh} kWh. 
 Consider typical usage patterns for these appliances in South Africa. 
 Respond ONLY with a JSON object mapping appliance names (from the provided list) to their estimated kWh consumption as a string (e.g., "Geyser": "5 kWh", "Fridge": "1.2 kWh").
-Example JSON: {"${applianceNames[0]}": "X kWh", "${applianceNames[1] || 'AnotherAppliance'}": "Y kWh"}`;
+Example JSON: {"${applianceNames[0]}": "X kWh", "${applianceNames[1] || 'AnotherAppliance'}": "Y kWh"}.
+Do not use introductory phrases like 'Here is...' or any other text outside the JSON object.`;
 
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: GEMINI_TEXT_MODEL,
@@ -306,7 +326,7 @@ export const getBudgetFeedback = async (
   transactions: Transaction[],
   userProfile: UserProfile | null
 ): Promise<{ feedback: string, sources?: GroundingSource[] }> => {
-  if (!apiKey || apiKey === "MISSING_API_KEY") return { feedback: "Budget feedback disabled. API Key missing." };
+  // Removed API key check here
   if (budgetItems.length === 0) return { feedback: "No budget set. Please add budget items first to get feedback." };
 
   const expenseTransactions = transactions.filter(t => t.type === TransactionType.Expense);
@@ -337,9 +357,8 @@ ${Object.entries(spendingByBudgetCategory).map(([cat, spent]) => `- ${cat}: R${s
   prompt += `
 Provide feedback on this budget's realism. Identify categories where spending significantly deviates from the allocated budget (either over or under).
 Offer 2-3 specific, actionable suggestions for improvement, better alignment, or staying on track.
-Format the feedback clearly and concisely. Use bullet points for suggestions.
 Use Google Search if needed for general South African household spending benchmarks or cost-saving tips relevant to the categories mentioned.
-Response should be text only, suitable for direct display.`;
+${formattingInstructions}`;
 
   try {
     const response: GenerateContentResponse = await ai.models.generateContent({

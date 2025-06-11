@@ -36,10 +36,6 @@ export const NAVIGATION_ITEMS = [
 ];
 
 // Environment Variable Handling
-// These should be set in your environment. For development, placeholders can be set in index.html.
-if (!process.env.API_KEY || process.env.API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
-  console.warn(
-    "Gemini API_KEY is not set or is using a placeholder. AI features may fail. " +
-    "Ensure this is properly configured in your environment or index.html for development."
-  );
-}
+// API_KEY is expected to be set in the environment.
+// The application code should assume process.env.API_KEY is available and valid.
+// No warning here as per new guidelines.

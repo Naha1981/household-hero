@@ -137,7 +137,7 @@ const App: React.FC = () => {
     <HashRouter>
       <div className="flex flex-col min-h-screen">
         {hasOnboarded && <Navbar userProfile={appData.userProfile} />} 
-        <main className={`flex-grow ${hasOnboarded ? 'max-w-7xl w-full mx-auto py-6 sm:py-8 px-2 sm:px-4 lg:px-6' : ''}`}>
+        <main className={`flex-grow ${hasOnboarded ? 'overflow-y-auto pt-16 max-w-7xl w-full mx-auto px-2 sm:px-4 lg:px-6 pb-6 sm:pb-8' : 'overflow-y-auto'}`}>
           <Routes>
             {/* Onboarding is now the primary entry if no profile or not onboarded */}
             <Route path="/app-onboarding" element={
