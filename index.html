@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HouseHoldHero AI</title>
+    <script>
+      // Initialize process.env if it doesn't exist (for browser environments without build tools)
+      if (typeof window.process === 'undefined') {
+        window.process = { env: {} };
+      }
+      // Placeholder for API keys - In a real production app, manage these securely
+      // For development, you can set them here or through a .env file if your setup supports it.
+      window.process.env.API_KEY = window.process.env.API_KEY || "YOUR_GEMINI_API_KEY_HERE"; // Existing placeholder
+
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#4f46e5',    // Indigo 600
+              secondary: '#ec4899',  // Pink 500
+              neutral: '#64748b',   // Slate 500 (for text, icons)
+              'base-100': '#ffffff', // White
+              'base-content': '#1e293b', // Slate 800 (for text on base-100)
+              success: '#10b981',   // Emerald 500
+              warning: '#f59e0b',   // Amber 400
+              error: '#ef4444',     // Red 500
+              // Dark theme colors from Spending Overview Mockup
+              'theme-dark-bg': '#221d11',
+              'theme-dark-text': '#ffffff', // General text on dark bg
+              'theme-dark-text-muted': '#caba91',
+              'theme-dark-border': '#675832',
+              'theme-dark-accent': '#f4c653', // For active tabs, highlights
+              'theme-dark-ui-element': '#483e23', // For chart bars, card-like backgrounds
+              'theme-dark-negative': '#fa4238', // For negative percentages/indicators
+              'theme-dark-positive': '#0bda1d', // For positive percentages/indicators
+              'theme-dark-navbar-bg': '#342c19', 
+            }
+          }
+        }
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.4.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.6.2",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.50.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-100">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
